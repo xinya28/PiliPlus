@@ -1,0 +1,132 @@
+name: Build for Windows ARM64
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: "tag"
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "tag (empty = build only, no release)"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: win-arm64-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-windows-arm64:
+    name: Release Windows ARM64
+    # GitHub-hosted arm64 Windows runner: Flutter cross-compiles to windows-arm64
+    # only from an arm64 host (gen_snapshot has to run natively).
+    runs-on: windows-11-arm
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: pubspec.yaml
+          cache: true
+
+      - name: Show toolchain
+        shell: pwsh
+        run: |
+          "host arch : $env:PROCESSOR_ARCHITECTURE"
+          flutter --version
+          flutter config --enable-windows-desktop
+          flutter doctor -v
+
+      - name: Set and Extract version
+        shell: pwsh
+        run: lib/scripts/build.ps1
+
+      - name: Apply Patch
+        shell: pwsh
+        run: lib/scripts/patch.ps1 windows
+
+      - name: Apply Windows ARM64 Patch
+        shell: pwsh
+        run: lib/scripts/patch_win_arm64.ps1
+
+      - name: Build Windows ARM64
+        shell: pwsh
+        env:
+          # Flutter for Windows picks the target arch from the host; force the
+          # arm64 target so the toolchain downloads the windows-arm64 artifacts.
+          FLUTTER_HOST_ARCH: arm64
+        run: |
+          flutter build windows --release --dart-define-from-file=pili_release.json --no-pub
+
+      - name: Compile installer
+        shell: pwsh
+        run: |
+          $releaseDir = Join-Path $PWD 'build\windows\arm64\runner\Release'
+          if (-not (Test-Path $releaseDir)) { throw "build output not found: $releaseDir" }
+
+          $isccCandidates = @(
+            'C:\Program Files (x86)\Inno Setup 6\ISCC.exe',
+            'C:\Program Files\Inno Setup 6\ISCC.exe',
+            'C:\Program Files (x86)\Inno Setup 5\ISCC.exe'
+          )
+          $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) {
+            choco install innosetup -y --no-progress
+            $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+          if (-not $iscc) { throw 'ISCC.exe not found' }
+
+          $innoDir = Split-Path $iscc -Parent
+          Copy-Item 'windows\packaging\exe\ChineseSimplified.isl' (Join-Path $innoDir 'Languages\ChineseSimplified.isl') -Force
+
+          New-Item -ItemType Directory -Force -Path (Join-Path $PWD 'dist') | Out-Null
+          & $iscc `
+            "/DAppVersion=$env:version" `
+            "/DSourceDir=$releaseDir" `
+            "/DOutputDir=$(Join-Path $PWD 'dist')" `
+            "/DOutputBaseFilename=PiliPlus_windows_$($env:version)_arm64_setup" `
+            'windows\packaging\exe\inno_setup_arm64.iss'
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+
+          Get-ChildItem 'dist' | ForEach-Object { "built: $($_.Name) ($([math]::Round($_.Length/1MB,1)) MB)" }
+
+      - name: Compress portable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path 'Release\PiliPlus-Win' | Out-Null
+          Copy-Item 'build\windows\arm64\runner\Release\*' 'Release\PiliPlus-Win\' -Recurse -Force
+          Compress-Archive -Path 'Release\PiliPlus-Win' -DestinationPath "PiliPlus_windows_$($env:version)_arm64_portable.zip" -Force
+
+      - name: Release
+        if: ${{ inputs.tag != '' }}
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
+          files: |
+            PiliPlus_windows_*_arm64_portable.zip
+            dist/PiliPlus_windows_*_arm64_setup.exe
+
+      - name: Upload windows arm64 setup
+        uses: actions/upload-artifact@v7
+        with:
+          name: Windows-setup-arm64-release
+          path: dist/PiliPlus_windows_*_arm64_setup.exe
+
+      - name: Upload windows arm64 portable
+        uses: actions/upload-artifact@v7
+        with:
+          name: Windows-file-arm64-release
+          path: PiliPlus_windows_*_arm64_portable.zip
