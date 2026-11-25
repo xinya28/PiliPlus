@@ -14,6 +14,12 @@ $ErrorActionPreference = 'Stop'
 
 if (-not $env:FLUTTER_ROOT) { throw 'FLUTTER_ROOT is not set' }
 
+# A cached SDK may still carry the framework patches that lib/scripts/patch.ps1
+# applied in an earlier run; `git apply` would then fail. Start from a clean tree.
+Write-Host 'resetting framework sources...'
+git -C $env:FLUTTER_ROOT checkout -- packages/flutter
+if ($LASTEXITCODE -ne 0) { Write-Host 'warning: could not reset packages/flutter' }
+
 $OsDart = Join-Path $env:FLUTTER_ROOT 'packages\flutter_tools\lib\src\base\os.dart'
 if (-not (Test-Path $OsDart)) { throw "not found: $OsDart" }
 

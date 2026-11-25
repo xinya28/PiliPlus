@@ -48,7 +48,10 @@ jobs:
           # arm64 Windows through emulation and still cross-compiles to
           # windows-arm64 (see FLUTTER_HOST_ARCH below).
           architecture: x64
-          cache: true
+          # Do not cache the SDK: lib/scripts/patch.ps1 applies framework patches
+          # to it, and a cache hit would restore an already patched tree where
+          # `git apply` fails.
+          cache: false
 
       - name: Show toolchain
         shell: pwsh
