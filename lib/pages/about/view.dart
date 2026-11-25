@@ -177,8 +177,48 @@ Commit Hash: ${BuildConfig.commitHash}''',
           ListTile(
             onTap: () => PageUtils.launchURL(Constants.sourceCodeUrl),
             leading: const Icon(Icons.code),
-            title: const Text('Source Code'),
+            title: const Text('源代码'),
             subtitle: Text(Constants.sourceCodeUrl, style: subTitleStyle),
+          ),
+          ListTile(
+            onTap: () => PageUtils.launchURL(Constants.upstreamUrl),
+            leading: const Icon(Icons.alt_route),
+            title: const Text('上游项目'),
+            subtitle: Text(
+              'bggRGjQaUbCoE/PiliPlus · 本仓库为其 Windows ARM64 版本',
+              style: subTitleStyle,
+            ),
+          ),
+          ListTile(
+            onTap: () => PageUtils.launchURL(Constants.originUrl),
+            leading: const Icon(Icons.history_edu),
+            title: const Text('最初的项目'),
+            subtitle: Text('guozhigq/pilipala', style: subTitleStyle),
+          ),
+          if (Platform.isWindows)
+            ListTile(
+              onTap: () => PageUtils.launchURL(Constants.dshUrl),
+              leading: const Icon(Icons.memory),
+              title: const Text('Windows ARM64 支持'),
+              subtitle: Text(
+                '由 DSH（DeepSeek Harness）提供',
+                style: subTitleStyle,
+              ),
+            ),
+          ListTile(
+            onTap: () => showLicensePage(
+              context: context,
+              applicationName: Constants.appName,
+              applicationVersion: currentVersion,
+              applicationLegalese:
+                  '${Constants.licenseName} · 上游 © bggRGjQaUbCoE',
+            ),
+            leading: const Icon(Icons.description_outlined),
+            title: const Text('开源许可'),
+            subtitle: Text(
+              '${Constants.licenseName} · 含第三方依赖许可',
+              style: subTitleStyle,
+            ),
           ),
           if (Platform.isAndroid)
             ListTile(
@@ -192,6 +232,10 @@ Commit Hash: ${BuildConfig.commitHash}''',
                 PageUtils.launchURL('${Constants.sourceCodeUrl}/issues'),
             leading: const Icon(Icons.feedback_outlined),
             title: const Text('问题反馈'),
+            subtitle: Text(
+              '仅针对 Windows ARM64 适配，上游问题请反馈至上游仓库',
+              style: subTitleStyle,
+            ),
             trailing: Icon(Icons.arrow_forward, size: 16, color: outline),
           ),
           ListTile(

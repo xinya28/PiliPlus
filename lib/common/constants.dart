@@ -6,6 +6,18 @@ abstract final class Constants {
   /// 上游仓库：https://github.com/bggRGjQaUbCoE/PiliPlus
   static const sourceCodeUrl = 'https://github.com/xinya28/PiliPlus_For_WOA64';
 
+  /// 上游仓库地址。
+  static const upstreamUrl = 'https://github.com/bggRGjQaUbCoE/PiliPlus';
+
+  /// Windows ARM64 适配所依赖的 DSH（DeepSeek Harness）。
+  static const dshUrl = 'https://github.com/deepseek-ai/deepseek-harness';
+
+  /// 最初的项目。
+  static const originUrl = 'https://github.com/guozhigq/pilipala';
+
+  /// 本项目的开源许可。
+  static const licenseName = 'GPL-3.0';
+
   // 27eb53fc9058f8c3  移动端 Android
   // 4409e2ce8ffd12b8  HD版
   static const String appKey = 'dfca71928277209b';
