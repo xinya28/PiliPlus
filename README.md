@@ -13,6 +13,9 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/bggRGjQaUbCoE/PiliPlus) 
 ![GitHub Repo stars](https://img.shields.io/github/stars/bggRGjQaUbCoE/PiliPlus) 
 ![GitHub all releases](https://img.shields.io/github/downloads/bggRGjQaUbCoE/PiliPlus/total) 
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
+
+Windows ARM64 构建由 DSH 提供支持
 </div>
     <p>使用Flutter开发的BiliBili第三方客户端</p>
     
@@ -274,9 +277,3 @@ Windows ARM64 构建做兼容性验证；构建通过后再合并 PR。若合并
    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
  </picture>
 </a>
-
-<br/>
-
-Windows ARM64 构建由 DSH 提供支持：
-
-[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
