@@ -119,8 +119,9 @@ class _AboutPageState extends State<AboutPage> {
               textAlign: TextAlign.center,
               style: theme.textTheme.titleMedium!.copyWith(height: 2),
             ),
-            subtitle: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            subtitle: Wrap(
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
                   '使用Flutter开发的B站第三方客户端',
@@ -131,6 +132,10 @@ class _AboutPageState extends State<AboutPage> {
                   Icons.accessibility_new,
                   semanticLabel: "无障碍适配",
                   size: 18,
+                ),
+                Text(
+                  '使用DSH提供WOA64支持',
+                  style: TextStyle(color: outline, fontSize: 13),
                 ),
               ],
             ),

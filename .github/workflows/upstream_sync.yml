@@ -1,0 +1,91 @@
+name: Sync upstream
+
+# Merges bggRGjQaUbCoE/PiliPlus@main into a `sync/upstream-*` branch, opens a PR
+# against main and dispatches the Windows ARM64 build on that branch. main is
+# only updated by merging the PR, and only while the ARM64 build is green, so an
+# upstream feature can never silently break the WOA64 adaptations.
+
+on:
+  schedule:
+    # Mondays 03:00 UTC
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'xinya28/PiliPlus_For_WOA64'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Merge upstream/main into a sync branch
+        id: merge
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream https://github.com/bggRGjQaUbCoE/PiliPlus.git
+          git fetch --no-tags upstream main
+
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "main already contains upstream/main, nothing to do"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BRANCH="sync/upstream-$(git rev-parse --short upstream/main)"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          git switch -c "$BRANCH"
+
+          if ! git merge --no-edit upstream/main; then
+            git merge --abort
+            echo "::error title=Upstream merge conflict::Merging upstream/main failed. Resolve the conflict locally against $BRANCH and push it, then re-run the Windows ARM64 build."
+            exit 1
+          fi
+
+          # Disposable branch: overwrite a previous attempt for the same commit.
+          git push --force origin "$BRANCH"
+
+      - name: Open pull request
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.merge.outputs.branch }}
+        run: |
+          set -euo pipefail
+          existing="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')"
+          if [ -n "$existing" ]; then
+            echo "PR #$existing already tracks $BRANCH"
+            exit 0
+          fi
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore: sync upstream ($(date -u +%Y-%m-%d))" \
+            --body "Automated merge of bggRGjQaUbCoE/PiliPlus@main into this fork. The Windows ARM64 build (workflow_dispatch, no release) is started on this branch to check that the libmpv/ANGLE and Flutter patches still apply. Merge only once that build is green."
+
+      - name: Verify with the Windows ARM64 build
+        if: steps.merge.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.merge.outputs.branch }}
+        run: |
+          set -euo pipefail
+          gh workflow run win_arm64.yml --ref "$BRANCH"
+          echo "Dispatched win_arm64.yml on $BRANCH"
+          echo "https://github.com/${{ github.repository }}/actions/workflows/win_arm64.yml"

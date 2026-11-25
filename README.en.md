@@ -44,6 +44,14 @@ derives the Windows target from the architecture of the flutter tool itself, so
 `lib/scripts/patch_win_arm64.ps1` switches media_kit to the aarch64 libmpv and the arm64
 ANGLE binaries. Windows ARM64 is not supported upstream.
 
+## Keeping up with upstream
+
+`main` always stays releasable. `.github/workflows/upstream_sync.yml` runs weekly (or on
+demand): it merges `bggRGjQaUbCoE/PiliPlus@main` into a `sync/upstream-*` branch, opens a
+pull request, and dispatches a Windows ARM64 build on that branch as a compatibility gate.
+Merge the pull request only once that build is green; a merge conflict or a mismatched
+patch makes the workflow fail loudly and leaves `main` untouched.
+
 ## Disclaimer
 
 PiliPlus is a personal project developed for educational purposes, intended only for learning and testing. Please delete it within 24 hours of downloading.
@@ -72,3 +80,9 @@ Thank you for using PiliPlus.
    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
  </picture>
 </a>
+
+<br/>
+
+The Windows ARM64 build is powered by DSH:
+
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)

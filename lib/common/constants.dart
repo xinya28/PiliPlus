@@ -1,6 +1,10 @@
 abstract final class Constants {
   static const appName = 'PiliPlus';
-  static const sourceCodeUrl = 'https://github.com/bggRGjQaUbCoE/PiliPlus';
+
+  /// 本项目（Windows on ARM64 版本）的仓库地址。
+  ///
+  /// 上游仓库：https://github.com/bggRGjQaUbCoE/PiliPlus
+  static const sourceCodeUrl = 'https://github.com/xinya28/PiliPlus_For_WOA64';
 
   // 27eb53fc9058f8c3  移动端 Android
   // 4409e2ce8ffd12b8  HD版

@@ -231,6 +231,13 @@
 `FLUTTER_HOST_ARCH`；`lib/scripts/patch_win_arm64.ps1` 则把 media_kit 切换到 aarch64 版 libmpv
 与 arm64 版 ANGLE。上游并不支持 Windows ARM64。
 
+## 与上游同步
+
+`main` 始终保持可发布状态。`.github/workflows/upstream_sync.yml` 会每周（也可手动触发）把
+`bggRGjQaUbCoE/PiliPlus@main` 合并到 `sync/upstream-*` 分支并开 PR，同时在该分支上触发一次
+Windows ARM64 构建做兼容性验证；构建通过后再合并 PR。若合并冲突或补丁失配，工作流会直接失败并
+提示，`main` 不受影响。
+
 <br/>
 
 ## 声明
@@ -267,3 +274,9 @@
    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=bggRGjQaUbCoE/PiliPlus&type=Date" />
  </picture>
 </a>
+
+<br/>
+
+Windows ARM64 构建由 DSH 提供支持：
+
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)
