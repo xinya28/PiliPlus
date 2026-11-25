@@ -66,6 +66,17 @@ jobs:
         shell: pwsh
         run: lib/scripts/patch_win_arm64.ps1
 
+      - name: Verify target architecture
+        shell: pwsh
+        env:
+          FLUTTER_HOST_ARCH: arm64
+        run: |
+          "FLUTTER_HOST_ARCH=$env:FLUTTER_HOST_ARCH"
+          "flutter      : $((Get-Command flutter).Source)"
+          flutter build windows --release --config-only --dart-define-from-file=pili_release.json --no-pub
+          Get-ChildItem 'build\windows' -Directory -ErrorAction SilentlyContinue | ForEach-Object { "build dir: $($_.Name)" }
+          if (-not (Test-Path 'build\windows\arm64')) { throw 'flutter did not target windows-arm64' }
+
       - name: Build Windows ARM64
         shell: pwsh
         env:
