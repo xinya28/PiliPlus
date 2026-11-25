@@ -221,7 +221,7 @@
 
 ## Windows on ARM64
 
-本 fork 额外提供原生 `windows-arm64`（Windows 11 ARM）构建，见 [Releases](https://github.com/xinya28/PiliPlus/releases)：
+本 fork 额外提供原生 `windows-arm64`（Windows 11 ARM）构建，见 [Releases](https://github.com/xinya28/PiliPlus_For_WOA64/releases)：
 
 - `PiliPlus_windows_<version>_arm64_setup.exe`：安装包（仅限 ARM64 设备安装）
 - `PiliPlus_windows_<version>_arm64_portable.zip`：免安装版，解压后运行 `piliplus.exe`

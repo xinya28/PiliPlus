@@ -33,7 +33,7 @@ Download a build from [Releases](https://github.com/bggRGjQaUbCoE/PiliPlus/relea
 ## Windows on ARM64
 
 This fork also ships a native `windows-arm64` (Windows 11 on ARM) build, see
-[Releases](https://github.com/xinya28/PiliPlus/releases):
+[Releases](https://github.com/xinya28/PiliPlus_For_WOA64/releases):
 
 - `PiliPlus_windows_<version>_arm64_setup.exe` — installer (ARM64 machines only)
 - `PiliPlus_windows_<version>_arm64_portable.zip` — portable build, run `piliplus.exe`
