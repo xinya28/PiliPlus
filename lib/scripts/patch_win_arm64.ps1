@@ -31,7 +31,10 @@ function Update-FileContent([string]$Path, [string]$Old, [string]$New, [string]$
     if (-not (Test-Path $Path)) {
         throw "patch target is missing: $Path ($Label)"
     }
-    # Normalise line endings so the patterns below match whatever git checked out.
+    # Normalise line endings (the checkout may be CRLF, the patterns below LF) so
+    # the comparison below is independent of git's eol conversion.
+    $Old = $Old -replace "`r`n", "`n"
+    $New = $New -replace "`r`n", "`n"
     $Text = (Get-Content $Path -Raw) -replace "`r`n", "`n"
     if ($Text.Contains($New)) {
         Write-Host "already patched: $Label"
