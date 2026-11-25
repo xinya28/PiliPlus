@@ -37,10 +37,16 @@ $New = @'
     return switch (_currentAbi) {
 '@
 
+# The checkout may be CRLF while the patterns above are LF.
+$Old = $Old -replace "`r`n", "`n"
+$New = $New -replace "`r`n", "`n"
+
 if ($Text.Contains($New)) {
     Write-Host 'os.dart is already patched'
 } else {
     if (-not $Text.Contains($Old)) {
+        $Idx = $Text.IndexOf('HostPlatform get hostPlatform')
+        if ($Idx -ge 0) { Write-Host $Text.Substring($Idx, [Math]::Min(400, $Text.Length - $Idx)) }
         throw 'os.dart: hostPlatform getter not found (unsupported Flutter version)'
     }
     $Text = $Text.Replace($Old, $New)
