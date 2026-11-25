@@ -39,6 +39,10 @@ jobs:
         with:
           channel: stable
           flutter-version-file: pubspec.yaml
+          # Flutter only publishes x64 Windows SDK archives. The x64 SDK runs on
+          # arm64 Windows through emulation and still cross-compiles to
+          # windows-arm64 (see FLUTTER_HOST_ARCH below).
+          architecture: x64
           cache: true
 
       - name: Show toolchain
@@ -48,6 +52,7 @@ jobs:
           flutter --version
           flutter config --enable-windows-desktop
           flutter doctor -v
+          exit 0
 
       - name: Set and Extract version
         shell: pwsh
