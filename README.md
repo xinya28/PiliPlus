@@ -219,6 +219,20 @@
 
 <br/>
 
+## Windows on ARM64
+
+本 fork 额外提供原生 `windows-arm64`（Windows 11 ARM）构建，见 [Releases](https://github.com/xinya28/PiliPlus/releases)：
+
+- `PiliPlus_windows_<version>_arm64_setup.exe`：安装包（仅限 ARM64 设备安装）
+- `PiliPlus_windows_<version>_arm64_portable.zip`：免安装版，解压后运行 `piliplus.exe`
+
+构建在原生 arm64 runner 上完成（`.github/workflows/win_arm64.yml`）。Flutter 3.47.x 会按 flutter
+工具自身的架构选择 Windows 目标，因此 `lib/scripts/patch_flutter_arm64.ps1` 让工具支持
+`FLUTTER_HOST_ARCH`；`lib/scripts/patch_win_arm64.ps1` 则把 media_kit 切换到 aarch64 版 libmpv
+与 arm64 版 ANGLE。上游并不支持 Windows ARM64。
+
+<br/>
+
 ## 声明
 
 此项目（PiliPlus）是个人为了兴趣而开发，仅用于学习和测试，请于下载后24小时内删除。

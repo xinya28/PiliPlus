@@ -30,6 +30,20 @@
 
 Download a build from [Releases](https://github.com/bggRGjQaUbCoE/PiliPlus/releases), or clone the repository and build it locally.
 
+## Windows on ARM64
+
+This fork also ships a native `windows-arm64` (Windows 11 on ARM) build, see
+[Releases](https://github.com/xinya28/PiliPlus/releases):
+
+- `PiliPlus_windows_<version>_arm64_setup.exe` — installer (ARM64 machines only)
+- `PiliPlus_windows_<version>_arm64_portable.zip` — portable build, run `piliplus.exe`
+
+It is built on a native arm64 runner by `.github/workflows/win_arm64.yml`. Flutter 3.47.x
+derives the Windows target from the architecture of the flutter tool itself, so
+`lib/scripts/patch_flutter_arm64.ps1` teaches it to honour `FLUTTER_HOST_ARCH`, and
+`lib/scripts/patch_win_arm64.ps1` switches media_kit to the aarch64 libmpv and the arm64
+ANGLE binaries. Windows ARM64 is not supported upstream.
+
 ## Disclaimer
 
 PiliPlus is a personal project developed for educational purposes, intended only for learning and testing. Please delete it within 24 hours of downloading.
