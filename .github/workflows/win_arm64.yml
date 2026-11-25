@@ -28,6 +28,11 @@ jobs:
     runs-on: windows-11-arm
     permissions:
       contents: write
+    env:
+      # Flutter selects the Windows target arch from the host; the SDK shipped
+      # for Windows is x64-only, so lib/scripts/patch_flutter_arm64.ps1 backports
+      # FLUTTER_HOST_ARCH support and this makes the tool build for arm64.
+      FLUTTER_HOST_ARCH: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -54,6 +59,10 @@ jobs:
           flutter doctor -v
           exit 0
 
+      - name: Patch flutter tool for windows-arm64
+        shell: pwsh
+        run: lib/scripts/patch_flutter_arm64.ps1
+
       - name: Set and Extract version
         shell: pwsh
         run: lib/scripts/build.ps1
@@ -68,8 +77,6 @@ jobs:
 
       - name: Verify target architecture
         shell: pwsh
-        env:
-          FLUTTER_HOST_ARCH: arm64
         run: |
           "FLUTTER_HOST_ARCH=$env:FLUTTER_HOST_ARCH"
           "flutter      : $((Get-Command flutter).Source)"
@@ -80,13 +87,10 @@ jobs:
             Select-String -Pattern 'cmake|-A |FLUTTER_TARGET_PLATFORM|windows-arm64' | Select-Object -First 40 |
             ForEach-Object { $_.Line.Trim() }
           Get-ChildItem 'build\windows' -Directory -ErrorAction SilentlyContinue | ForEach-Object { "build dir: $($_.Name)" }
+          if (-not (Test-Path 'build\windows\arm64')) { throw 'flutter did not target windows-arm64' }
 
       - name: Build Windows ARM64
         shell: pwsh
-        env:
-          # Flutter for Windows picks the target arch from the host; force the
-          # arm64 target so the toolchain downloads the windows-arm64 artifacts.
-          FLUTTER_HOST_ARCH: arm64
         run: |
           flutter build windows --release --dart-define-from-file=pili_release.json --no-pub
 
