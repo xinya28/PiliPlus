@@ -119,15 +119,25 @@ jobs:
             New-Item -ItemType Directory -Force -Path $destination | Out-Null
             if (Test-Path (Join-Path $destination $archive.Marker)) {
               Write-Host "already extracted: $($archive.Name)"
-              continue
-            }
-            if ($sevenZip) {
-              & $sevenZip x -y "-o$destination" $file | Select-Object -Last 2
             } else {
-              & "$env:SystemRoot\System32\tar.exe" -xf $file -C $destination
+              if ($sevenZip) {
+                & $sevenZip x -y "-o$destination" $file | Select-Object -Last 2
+              } else {
+                & "$env:SystemRoot\System32\tar.exe" -xf $file -C $destination
+              }
+              if ($LASTEXITCODE -ne 0) { throw "failed to extract $($archive.Name) (exit $LASTEXITCODE)" }
+              Get-ChildItem $destination | ForEach-Object { "  $($_.Name)" }
             }
-            if ($LASTEXITCODE -ne 0) { throw "failed to extract $($archive.Name) (exit $LASTEXITCODE)" }
-            Get-ChildItem $destination | ForEach-Object { "  $($_.Name)" }
+            # The mpv headers are nested in include/mpv, but media_kit_video and
+            # media_kit_native_event_loop include "client.h" from
+            # ${CMAKE_BINARY_DIR}/libmpv/include, which is what the upstream
+            # xcopy/ren dance in the plugin CMakeLists produces as well.
+            $nested = Join-Path $destination 'include\mpv'
+            if (Test-Path $nested) {
+              Get-ChildItem $nested -File | Move-Item -Destination (Join-Path $destination 'include') -Force
+              Remove-Item $nested -Recurse -Force
+              Write-Host "flattened libmpv headers into $destination\include"
+            }
           }
 
       - name: Verify target architecture
