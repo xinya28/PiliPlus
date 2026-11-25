@@ -221,10 +221,15 @@ set(
   "${ANGLE_SRC}/vk_swiftshader.dll"
   "${ANGLE_SRC}/vulkan-1.dll"
   "${ANGLE_SRC}/zlib.dll"
-  PARENT_SCOPE
 )
 
 # The arm64 ANGLE build additionally depends on its own libc++ runtime.
 if("${FLUTTER_TARGET_PLATFORM}" STREQUAL "windows-arm64")
   list(APPEND media_kit_libs_windows_video_bundled_libraries "${ANGLE_SRC}/libc++.dll")
 endif()
+
+set(
+  media_kit_libs_windows_video_bundled_libraries
+  ${media_kit_libs_windows_video_bundled_libraries}
+  PARENT_SCOPE
+)
