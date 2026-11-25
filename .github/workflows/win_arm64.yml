@@ -75,6 +75,61 @@ jobs:
         shell: pwsh
         run: lib/scripts/patch_win_arm64.ps1
 
+      - name: Prepare media_kit native libraries
+        shell: pwsh
+        run: |
+          # media_kit_libs_windows_video downloads + unpacks these archives from
+          # its CMakeLists.txt, but CMake's liblzma cannot read the ARM64 archives
+          # and MSBuild swallows the failure of the custom command. Download and
+          # extract them here instead: the plugin re-verifies the MD5 and skips
+          # both steps when the archive and the extracted directory are present.
+          $bin = Join-Path $PWD 'build\windows\arm64'
+          New-Item -ItemType Directory -Force -Path $bin | Out-Null
+
+          $sevenZip = @('C:\Program Files\7-Zip\7z.exe', 'C:\Program Files (x86)\7-Zip\7z.exe') |
+            Where-Object { Test-Path $_ } | Select-Object -First 1
+
+          $archives = @(
+            @{
+              Name   = 'mpv-dev-aarch64-20260607-git-43b14a4.7z'
+              Md5    = 'e4c49712b9cf0d77e1ae8e1a9c8e3ed7'
+              Url    = 'https://github.com/bggRGjQaUbCoE/mpv-winbuild-cmake/releases/download/20260607/mpv-dev-aarch64-20260607-git-43b14a4.7z'
+              Dir    = 'libmpv'
+              Marker = 'libmpv-2.dll'
+            },
+            @{
+              Name   = 'ANGLE_WINARM64.7z'
+              Md5    = 'b56aaae894ccf6c8ee90b59ee642a787'
+              Url    = 'https://github.com/talynone/flutter-windows-ANGLE-OpenGL-ES/releases/download/v1.0.1/ANGLE_WINARM64.7z'
+              Dir    = 'ANGLE'
+              Marker = 'libEGL.dll'
+            }
+          )
+
+          foreach ($archive in $archives) {
+            $file = Join-Path $bin $archive.Name
+            if (-not (Test-Path $file)) {
+              Write-Host "downloading $($archive.Url)"
+              Invoke-WebRequest -Uri $archive.Url -OutFile $file
+            }
+            $hash = (Get-FileHash $file -Algorithm MD5).Hash.ToLowerInvariant()
+            if ($hash -ne $archive.Md5) { throw "MD5 mismatch for $($archive.Name): $hash" }
+
+            $destination = Join-Path $bin $archive.Dir
+            New-Item -ItemType Directory -Force -Path $destination | Out-Null
+            if (Test-Path (Join-Path $destination $archive.Marker)) {
+              Write-Host "already extracted: $($archive.Name)"
+              continue
+            }
+            if ($sevenZip) {
+              & $sevenZip x -y "-o$destination" $file | Select-Object -Last 2
+            } else {
+              & "$env:SystemRoot\System32\tar.exe" -xf $file -C $destination
+            }
+            if ($LASTEXITCODE -ne 0) { throw "failed to extract $($archive.Name) (exit $LASTEXITCODE)" }
+            Get-ChildItem $destination | ForEach-Object { "  $($_.Name)" }
+          }
+
       - name: Verify target architecture
         shell: pwsh
         run: |
